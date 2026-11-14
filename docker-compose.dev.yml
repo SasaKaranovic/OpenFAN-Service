@@ -1,0 +1,32 @@
+# Development compose file: builds the image from this folder instead of pulling it.
+#
+#   docker compose -f docker-compose.dev.yml up --build          # demo mode
+#   docker compose -f docker-compose.dev.yml down
+#
+# For a real controller over USB (Linux, or Windows with usbipd-win), remove
+# OPENFAN_DEMO, delete dev-config/compose and uncomment "devices".
+services:
+  openfan-service:
+    build:
+      context: .
+      args:   # version shown in the footer: set OPENFAN_VERSION / OPENFAN_GIT_HASH, else dev/unknown
+        OPENFAN_VERSION: ${OPENFAN_VERSION:-dev}
+        OPENFAN_GIT_HASH: ${OPENFAN_GIT_HASH:-unknown}
+    image: openfan-service:dev
+    container_name: openfan-service-dev
+    restart: unless-stopped
+    ports:
+      - "5340:5340"
+    environment:
+      - TZ=Etc/UTC
+      - PUID=1000
+      - PGID=1000
+      - OPENFAN_DEMO=1
+      - OPENFAN_LOG_LEVEL=info
+    volumes:
+      - ./dev-config/compose:/config
+      # - ./dev-config/unraid:/unraid:ro     # fake disks.ini from scripts/fake_unraid_disks.py
+    # devices:
+    #   - /dev/ttyACM0:/dev/ttyACM0
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # reach a controller/fake API running on this machine

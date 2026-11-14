@@ -1,0 +1,20 @@
+# Unraid: disk temperatures from disks.ini + OpenFAN over USB.
+# Most Unraid users will use the Community Applications template instead
+# (examples/unraid-template.xml); this file shows the same settings.
+services:
+  openfan-service:
+    image: ghcr.io/sasakaranovic/openfan-service:latest
+    container_name: openfan-service
+    restart: unless-stopped
+    ports:
+      - "5340:5340"
+    environment:
+      - TZ=America/Toronto
+      - PUID=99            # Unraid's "nobody"
+      - PGID=100           # Unraid's "users"
+    volumes:
+      - /mnt/user/appdata/openfan-service:/config
+      - /var/local/emhttp:/unraid:ro        # disks.ini lives here; read-only
+    devices:
+      - /dev/ttyACM0:/dev/ttyACM0
+# In the web UI: Sensors → Add sensor source → "Unraid disks", path /unraid/disks.ini

@@ -1,0 +1,12 @@
+# Try the service without any hardware: a simulated controller and sensors.
+#   docker compose -f examples/docker-compose.demo.yml up
+#   open http://localhost:5340
+services:
+  openfan-demo:
+    image: ghcr.io/sasakaranovic/openfan-service:latest
+    ports:
+      - "5340:5340"
+    environment:
+      - OPENFAN_DEMO=1
+    volumes:
+      - ./demo-config:/config

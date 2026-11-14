@@ -1,0 +1,25 @@
+# OpenFAN Service – quick start
+#
+# 1. Plug the OpenFAN controller in over USB and check its device name:
+#      ls -l /dev/serial/by-id/      (or /dev/ttyACM*)
+# 2. Adjust the "devices" line below if it is not /dev/ttyACM0.
+# 3. docker compose up -d
+# 4. Open http://<this machine>:5340
+#
+# More examples (Unraid, TrueNAS, REST controller, demo mode) are in the examples/ folder.
+
+services:
+  openfan-service:
+    image: ghcr.io/sasakaranovic/openfan-service:latest
+    container_name: openfan-service
+    restart: unless-stopped          # important: brings fan control back after a crash or reboot
+    ports:
+      - "5340:5340"
+    environment:
+      - TZ=Etc/UTC                   # your time zone, e.g. America/Toronto
+      - PUID=1000                    # owner of the files in ./config
+      - PGID=1000
+    volumes:
+      - ./config:/config             # settings, backups and history live here
+    devices:
+      - /dev/ttyACM0:/dev/ttyACM0    # the OpenFAN controller (USB)

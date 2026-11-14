@@ -1,0 +1,20 @@
+# TrueNAS SCALE (Custom App / docker compose).
+# Disk and CPU temperatures come from Linux hwmon (/sys/class/hwmon), which the
+# container can read without extra mounts. NVMe and many SATA drives (drivetemp)
+# appear there. For other drives use a "Command" source with smartctl, or push
+# values from a cron job with the Push API.
+services:
+  openfan-service:
+    image: ghcr.io/sasakaranovic/openfan-service:latest
+    container_name: openfan-service
+    restart: unless-stopped
+    ports:
+      - "5340:5340"
+    environment:
+      - TZ=America/Toronto
+      - PUID=568           # TrueNAS "apps" user
+      - PGID=568
+    volumes:
+      - /mnt/tank/apps/openfan-service:/config     # a dataset on your pool
+    devices:
+      - /dev/ttyACM0:/dev/ttyACM0

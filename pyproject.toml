@@ -1,0 +1,14 @@
+[project]
+name = "openfan-service"
+# Versions are build dates + git hash (see openfan_service/version.py), not semantic versions.
+version = "0"
+description = "Temperature-driven fan control for OpenFAN controllers, with a web UI."
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"

@@ -1,0 +1,18 @@
+# Use the OpenFAN Controller container's REST API instead of USB.
+# Handy when the controller is plugged into another machine, or when you also
+# want to keep using the OpenFAN Controller web app.
+services:
+  openfan-service:
+    image: ghcr.io/sasakaranovic/openfan-service:latest
+    container_name: openfan-service
+    restart: unless-stopped
+    ports:
+      - "5340:5340"
+    environment:
+      - TZ=Etc/UTC
+      - PUID=1000
+      - PGID=1000
+      # Only used the very first time, to pre-fill the controller settings:
+      - OPENFAN_CONTROLLER_URL=http://192.168.1.10:3000
+    volumes:
+      - ./config:/config

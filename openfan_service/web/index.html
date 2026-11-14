@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenFAN Service</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<script>
+  // Apply the saved theme before first paint (dark is the default).
+  try { var t = localStorage.getItem('openfan.theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#/dashboard">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="2.2"/><path d="M12 9.8c0-4 1-6.8 3.4-6.8 2.6 0 2.4 4.4-1.6 7.6"/><path d="M14.2 12c4 0 6.8 1 6.8 3.4 0 2.6-4.4 2.4-7.6-1.6"/><path d="M12 14.2c0 4-1 6.8-3.4 6.8-2.6 0-2.4-4.4 1.6-7.6"/><path d="M9.8 12c-4 0-6.8-1-6.8-3.4 0-2.6 4.4-2.4 7.6 1.6"/></svg>
+      <span>OpenFAN Service</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="#/dashboard" data-nav="dashboard">Dashboard</a>
+      <a href="#/curves" data-nav="curves">Fan curves</a>
+      <a href="#/fans" data-nav="fans">Fans</a>
+      <a href="#/sensors" data-nav="sensors">Sensors</a>
+      <a href="#/controllers" data-nav="controllers">Controllers</a>
+      <a href="#/notifications" data-nav="notifications">Notifications</a>
+      <a href="#/settings" data-nav="settings">Backup &amp; settings</a>
+    </nav>
+    <div class="topbar-right">
+      <a class="conn" id="conn" href="#/controllers" title="Controller settings">
+        <span class="dot" id="conn-dot"></span>
+        <span class="conn-text"><span class="conn-label" id="conn-label">Connecting…</span><span class="conn-target mono" id="conn-target"></span></span>
+      </a>
+      <button type="button" class="icon-btn" id="theme-toggle" aria-label="Switch theme" title="Switch theme"></button>
+    </div>
+  </div>
+</header>
+
+<main id="view" class="page" tabindex="-1"></main>
+
+<footer class="site-footer">
+  Made by <a href="https://sasakaranovic.com" target="_blank" rel="noopener">Sasa Karanovic</a>
+  from <a href="https://karanovicresearch.com" target="_blank" rel="noopener">KaranovicResearch</a>.
+  Running version <span class="mono" id="app-version">…</span>
+</footer>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+
+<div id="login" class="login" hidden>
+  <form class="card login-card" id="login-form">
+    <h1>OpenFAN Service</h1>
+    <label for="login-password">Password</label>
+    <input id="login-password" type="password" autocomplete="current-password" required>
+    <p class="error" id="login-error" hidden></p>
+    <button class="btn primary" type="submit">Sign in</button>
+  </form>
+</div>
+
+<script type="module" src="assets/js/app.js"></script>
+</body>
+</html>
