@@ -121,6 +121,8 @@ th:first-child, td:first-child { padding-left: 18px; } th:last-child, td:last-ch
 td.num, th.num { text-align: right; }
 tr.bad td { background: var(--danger-bg); }
 tr.bad td.age { color: var(--danger); font-weight: 700; }
+tr.ignored td { color: var(--faint); }
+tr.ignored td b { color: var(--faint); font-weight: 400; }
 
 /* -- events ------------------------------------------------------------- */
 .events { list-style: none; margin: 0; padding: 10px 18px 14px; display: flex; flex-direction: column; gap: 10px; font-size: 13px; max-height: 340px; overflow-y: auto; }
@@ -181,6 +183,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 .schip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; background: var(--surface-3); border: 1px solid var(--border); font-size: 12px; }
 .schip.top { background: var(--accent-soft); border-color: var(--accent-border); font-weight: 600; }
 .schip.bad { background: var(--danger-bg); border-color: var(--danger-border); }
+.schip.ignored { opacity: .6; border-style: dashed; }
 .schip button { font: inherit; border: 0; background: transparent; color: var(--muted); cursor: pointer; padding: 0 4px; font-size: 14px; }
 .fan-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
 .fan-pick label { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--border); background: var(--surface-2); border-radius: 8px; cursor: pointer; font-weight: 400; }

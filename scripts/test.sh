@@ -12,8 +12,7 @@ PY=.venv/bin/python
 
 if command -v node >/dev/null 2>&1; then
   echo "Checking web UI JavaScript syntax..."
-  find openfan_service/web -name '*.js' -print0 | while IFS= read -r -d '' f; do node --check "$f"; done
-  echo "JavaScript OK"
+  node scripts/check_js.mjs
 else
   echo "(node not installed: skipped the JavaScript syntax check)"
 fi

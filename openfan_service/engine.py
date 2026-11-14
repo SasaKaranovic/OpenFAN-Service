@@ -63,6 +63,7 @@ def decide(curve: Curve | None, curve_id: str | None, sensors: SensorManager, *,
     problems: list[str] = []
     pending = False
     sleeping_only = 0
+    ignored = 0
     for ref in curve.sensors:
         status, value, message = sensors.effective(ref, now)
         if status == "ok" and value is not None:
@@ -74,6 +75,8 @@ def decide(curve: Curve | None, curve_id: str | None, sensors: SensorManager, *,
                 sleeping_only += 1
         elif status == "pending":
             pending = True
+        elif status == "ignored":
+            ignored += 1
         else:
             problems.append(f"{ref}: {message or status}")
 
@@ -84,6 +87,9 @@ def decide(curve: Curve | None, curve_id: str | None, sensors: SensorManager, *,
     if problems:
         return Decision(FAILSAFE, failsafe_pwm, reasons=problems)
 
+    if not values and not sleeping_only:
+        # Every sensor of the curve is ignored: there is nothing to follow.
+        return Decision(FAILSAFE, failsafe_pwm, reasons=[f"all sensors of curve '{curve.name}' are ignored"])
     if not values:
         # Every sensor is asleep and set to 'ignore': run at the curve's lowest point.
         pwm = to_pwm(evaluate(curve.points, float("-inf"), curve.type), curve.min_pwm)

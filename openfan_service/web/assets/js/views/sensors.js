@@ -47,18 +47,40 @@ function paintSources() {
         <div class="inline"><button type="button" class="btn small" data-edit="${esc(src.id)}">Edit</button>
           <button type="button" class="btn small danger" data-del="${esc(src.id)}">Delete</button></div></div>
       ${live?.error ? `<div class="banner danger" style="margin:12px 18px 0"><div class="grow"><span class="body">${esc(live.error)}</span></div></div>` : ''}
-      <div class="table-wrap">${sensors.length ? `<table><thead><tr><th>Sensor</th><th>Label</th><th class="num">Value</th><th>Status</th><th class="num">Age</th></tr></thead>
+      <div class="table-wrap">${sensors.length ? `<table><thead><tr><th>Sensor</th><th>Label</th><th class="num">Value</th><th>Status</th><th class="num">Age</th><th><span class="sr-only">Ignore</span></th></tr></thead>
         <tbody>${sensors.map((s) => {
           const bad = ['stale', 'error', 'missing'].includes(s.status);
-          return `<tr class="${bad ? 'bad' : ''}"><td class="mono small">${esc(s.ref)}</td><td class="muted">${esc(s.label || '')}</td>
-          <td class="num"><b>${s.value === null ? '—' : esc(fmtTemp(s.value))}</b></td>
-          <td>${esc(s.status)}${s.message ? ` <span class="muted small">– ${esc(s.message)}</span>` : ''}</td>
-          <td class="num age">${esc(fmtAge(s.age))}</td></tr>`;
+          const usedBy = cfg.curves.filter((c) => c.sensors.includes(s.ref)).map((c) => c.name);
+          return `<tr class="${bad ? 'bad' : ''} ${s.ignored ? 'ignored' : ''}"><td class="mono small">${esc(s.ref)}</td><td class="muted">${esc(s.label || '')}</td>
+          <td class="num"><b>${s.value === null || s.ignored ? '—' : esc(fmtTemp(s.value))}</b></td>
+          <td>${s.ignored ? 'ignored' : esc(s.status)}${!s.ignored && s.message ? ` <span class="muted small">– ${esc(s.message)}</span>` : ''}</td>
+          <td class="num age">${s.ignored ? '' : esc(fmtAge(s.age))}</td>
+          <td class="num"><button type="button" class="btn small" data-ignore="${esc(s.ref)}" data-on="${s.ignored ? '0' : '1'}"
+            data-used="${esc(usedBy.join(', '))}" title="${s.ignored ? 'Show and use this sensor again' : 'Hide this sensor and never report problems for it'}">${s.ignored ? 'Restore' : 'Ignore'}</button></td></tr>`;
         }).join('')}</tbody></table>` : `<div class="card-body muted">${src.enabled ? 'No sensors reported yet.' : 'Disabled.'}</div>`}</div>
       ${pushHelp}</section>`;
   }).join('');
   box.querySelectorAll('[data-edit]').forEach((b) => b.addEventListener('click', () => { editing = b.dataset.edit; paintForm(); }));
   box.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', () => remove(b)));
+  box.querySelectorAll('[data-ignore]').forEach((b) => b.addEventListener('click', () => toggleIgnore(b)));
+}
+
+async function toggleIgnore(btn) {
+  const { store } = ctx;
+  const ref = btn.dataset.ignore;
+  const ignore = btn.dataset.on === '1';
+  if (ignore) {
+    const used = btn.dataset.used;
+    const body = used
+      ? `<b>${esc(ref)}</b> is used by <b>${esc(used)}</b>. Ignored sensors are left out of curves; a curve whose sensors are <i>all</i> ignored runs its fans in fail-safe.`
+      : `<b>${esc(ref)}</b> is hidden from the dashboard and never reports problems. You can restore it here at any time.`;
+    if (!(await confirmDialog('Ignore this sensor?', body, 'Ignore sensor'))) return;
+  }
+  await busy(btn, async () => {
+    await api.post('/api/sensors/ignore', { ref, ignored: ignore });
+    await store.refreshConfig();
+    toast(ignore ? `${ref} ignored` : `${ref} restored`);
+  });
 }
 
 async function remove(btn) {

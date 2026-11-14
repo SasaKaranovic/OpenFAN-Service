@@ -20,4 +20,4 @@ jobs:
         with:
           node-version: "22"
       - name: Check web UI JavaScript syntax
-        run: for f in $(find openfan_service/web -name '*.js'); do node --check "$f"; done
+        run: node scripts/check_js.mjs

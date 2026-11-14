@@ -262,3 +262,33 @@ def test_cycle_survives_exceptions(tmp_path, monkeypatch):
         assert h.engine.last_cycle is not None
         task.cancel()
     run(go())
+
+
+def test_ignored_sensor_is_left_out_of_the_curve(tmp_path):
+    async def go():
+        h = Harness(tmp_path)
+        await h.start()
+        h.push(a=40, b=35)
+        h.store.mutate(lambda d: d["sources"][0].update(ignored=["a"]))
+        assert h.sensors.effective("p:a")[0] == "ignored"
+        await h.engine.cycle()
+        assert h.fan(0).state == "ok" and h.fan(0).temp == 35      # only b counts
+        # An ignored sensor that fails is not a problem
+        h.sensors.states["p:a"].last_ok = time.monotonic() - 999
+        await h.engine.cycle()
+        assert h.fan(0).state == "ok" and h.kinds() == []
+        # All sensors ignored -> nothing to follow -> fail-safe
+        h.store.mutate(lambda d: d["sources"][0].update(ignored=["a", "b"]))
+        await h.engine.cycle()
+        assert h.fan(0).state == "failsafe" and "ignored" in h.fan(0).reasons[0]
+    run(go())
+
+
+def test_ignoring_does_not_restart_the_source(tmp_path):
+    async def go():
+        h = Harness(tmp_path)
+        await h.start()
+        rt = h.sensors.sources["p"]
+        h.store.mutate(lambda d: d["sources"][0].update(ignored=["a"]))
+        assert h.sensors.sources["p"] is rt and rt.cfg.ignored == ["a"]
+    run(go())

@@ -186,3 +186,22 @@ def test_clear_events(client):
         assert db.execute("SELECT COUNT(*) FROM events").fetchone()[0] == 0   # also gone after a restart
     finally:
         db.close()
+
+
+def test_ignore_and_restore_sensor(client):
+    wait_for(client, lambda s: any(x["ref"] == "demo:disk1" for x in s["sensors"]))
+    assert client.post("/api/sensors/ignore", json={"ref": "demo:disk1", "ignored": True}).json()["ok"]
+    st = client.get("/api/state").json()["data"]
+    s = next(x for x in st["sensors"] if x["ref"] == "demo:disk1")
+    assert s["ignored"] is True and s["status"] == "ignored"
+    cfg = client.get("/api/config").json()["data"]
+    assert next(x for x in cfg["sources"] if x["id"] == "demo")["ignored"] == ["disk1"]
+    # editing the source keeps the ignored list
+    assert client.put("/api/sources/demo", json={"name": "Demo 2", "options": {}}).json()["ok"]
+    cfg = client.get("/api/config").json()["data"]
+    assert next(x for x in cfg["sources"] if x["id"] == "demo")["ignored"] == ["disk1"]
+    assert client.post("/api/sensors/ignore", json={"ref": "demo:disk1", "ignored": False}).json()["ok"]
+    cfg = client.get("/api/config").json()["data"]
+    assert next(x for x in cfg["sources"] if x["id"] == "demo")["ignored"] == []
+    assert client.post("/api/sensors/ignore", json={"ref": "nope:x"}).status_code == 404
+    assert client.post("/api/sensors/ignore", json={"ref": "bad"}).status_code == 400

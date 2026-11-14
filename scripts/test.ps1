@@ -13,10 +13,7 @@ Invoke-Checked $py (@('-m', 'pytest') + $args)
 
 if (Get-Command node -ErrorAction SilentlyContinue) {
     Write-Host 'Checking web UI JavaScript syntax...'
-    Get-ChildItem -Recurse -Filter *.js (Join-Path $RepoRoot 'openfan_service\web') | ForEach-Object {
-        Invoke-Checked 'node' @('--check', $_.FullName)
-    }
-    Write-Host 'JavaScript OK'
+    Invoke-Checked 'node' @((Join-Path $RepoRoot 'scripts\check_js.mjs'))
 } else {
     Write-Host '(node not installed: skipped the JavaScript syntax check)'
 }

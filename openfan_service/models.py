@@ -82,6 +82,10 @@ class SensorSource(_Model):
     enabled: bool = True
     poll_interval: float = Field(5.0, ge=0.5, le=3600.0)
     options: dict[str, Any] = Field(default_factory=dict)
+    #: Sensor ids of this source the user chose to ignore (e.g. an unused Unraid slot that
+    #: always reports an error). Ignored sensors are hidden, never raise problems and are
+    #: left out of any curve that uses them.
+    ignored: list[str] = Field(default_factory=list)
 
     @field_validator("id")
     @classmethod

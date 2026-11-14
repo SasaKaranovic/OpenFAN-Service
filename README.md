@@ -103,6 +103,8 @@ Each curve has a hysteresis setting (default 2 °C). Fans speed up as soon as th
 | Push (API) | Values POSTed to the service | Cron jobs, scripts on other machines |
 | Demo | Simulated values | Trying things out |
 
+Any sensor can be **ignored** on the Sensors page, for example an empty Unraid slot that always reports `DISK_NP_DSBL`. An ignored sensor is hidden from the dashboard, never reports problems, and is left out of any curve that uses it. If *all* sensors of a curve are ignored, its fans go to fail-safe. *Restore* brings an ignored sensor back.
+
 The command, file and push types accept a single number, `name=value` lines, or JSON. Use *Multiply by* `0.001` for millidegree values.
 
 ### Push API
@@ -198,7 +200,7 @@ There are no semantic version numbers. Every Docker image build is a new version
 
 | Where | Version |
 |---|---|
-| Published image (GitHub workflow) | Tags `:2026-11-13`, `:2026-11-13-a1b2c3d` and `:latest` (from the `release` branch) |
+| Published image (GitHub workflow) | Tags `:latest`, `:2026-11-13` and `:2026-11-13-a1b2c3d` on every push to `master` (or `release`). One image covers amd64 and arm64; Docker picks the right one. |
 | Local build with `scripts/docker-build.*` | Tags `openfan-service:dev` and `openfan-service:2026-11-13-a1b2c3d`. `-dirty` is added when tracked files have uncommitted changes. |
 | Plain `docker build` without build arguments | `vdev [unknown]` |
 | Running from source | Date and hash of the last commit, plus `-dirty` if there are uncommitted changes |
@@ -217,6 +219,7 @@ The web UI uses a JSON API that you can script too. Main endpoints:
 | `POST /api/curves`, `PUT/DELETE /api/curves/{id}` | Manage curves (body may include `fans: ["main:0", ...]`) |
 | `PUT /api/fans/{controller}/{index}` | `{ "name": "...", "curve": "id" \| null }` |
 | `POST /api/sources`, `PUT/DELETE /api/sources/{id}`, `POST /api/sources/test` | Sensor sources |
+| `POST /api/sensors/ignore` `{ref, ignored}` | Ignore or restore one sensor |
 | `POST /api/push/{source}` | Push sensor values |
 | `POST /api/controllers`, `PUT/DELETE /api/controllers/{id}`, `POST /api/controllers/test` | Controllers |
 | `GET /api/controllers/{id}/fan-names`, `POST /api/controllers/{id}/fan-names/import` | Read / import the fan names saved in the OpenFAN Controller app (REST controllers only) |

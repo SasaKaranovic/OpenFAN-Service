@@ -39,10 +39,17 @@ class SensorManager:
     def apply(self, sources: list[SensorSource]) -> None:
         """Start, restart or stop sources so they match ``sources``."""
         wanted = {s.id: s for s in sources if s.enabled}
+
+        def plugin_settings(cfg: SensorSource) -> dict:
+            # Changing only the ignored list must not restart the plugin.
+            return cfg.model_dump(exclude={"ignored", "name"})
+
         for sid in list(self.sources):
             rt = self.sources[sid]
-            if sid not in wanted or wanted[sid].model_dump() != rt.cfg.model_dump():
+            if sid not in wanted or plugin_settings(wanted[sid]) != plugin_settings(rt.cfg):
                 self._stop(sid)
+            else:
+                rt.cfg = wanted[sid]
         for sid, cfg in wanted.items():
             if sid not in self.sources:
                 self._start(cfg)
@@ -167,12 +174,14 @@ class SensorManager:
     def effective(self, ref: str, now: float | None = None) -> tuple[str, float | None, str | None]:
         """Return (status, value, message) for a sensor, with staleness applied.
 
-        status is one of ok, sleeping, stale, error, missing, pending.
+        status is one of ok, sleeping, stale, error, missing, pending, ignored.
         """
         now = now or time.monotonic()
         st = self.states.get(ref)
-        source_id = ref.split(":", 1)[0]
+        source_id, _, sensor_id = ref.partition(":")
         rt = self.sources.get(source_id)
+        if rt is not None and sensor_id in rt.cfg.ignored:
+            return "ignored", st.value if st else None, "ignored by you"
         if st is None:
             if rt is not None and not rt.polled_once and rt.error is None:
                 return "pending", None, "waiting for first reading"
@@ -204,6 +213,7 @@ class SensorManager:
             age = st.age(now)
             out.append({
                 "ref": ref, "source": st.source_id, "id": st.sensor_id, "label": st.label,
+                "ignored": status == "ignored",
                 "value": value, "unit": st.unit, "status": status, "message": message,
                 "age": round(age, 1) if age is not None else None,
             })

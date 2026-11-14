@@ -191,15 +191,19 @@ export function onState(st) {
   }
   root.querySelector('#d-override').textContent = st.engine.override ? 'Cancel 100% override' : 'Set all to 100%';
 
-  root.querySelector('#d-sensor-count').textContent = `${st.sources.length} source${st.sources.length === 1 ? '' : 's'} · ${st.sensors.length} sensors`;
-  root.querySelector('#d-sensors').innerHTML = st.sensors.length ? `<table>
+  // Ignored sensors are hidden here; they are listed (and can be restored) on the Sensors page.
+  const shown = st.sensors.filter((s) => !s.ignored);
+  const nIgnored = st.sensors.length - shown.length;
+  root.querySelector('#d-sensor-count').textContent = `${st.sources.length} source${st.sources.length === 1 ? '' : 's'} · ${shown.length} sensors` +
+    (nIgnored ? ` · ${nIgnored} ignored` : '');
+  root.querySelector('#d-sensors').innerHTML = shown.length ? `<table>
     <thead><tr><th>Sensor</th><th>Source</th><th class="num">Value</th><th class="num">Age</th></tr></thead>
-    <tbody>${st.sensors.map((s) => {
+    <tbody>${shown.map((s) => {
       const bad = ['stale', 'error', 'missing'].includes(s.status);
       const val = s.status === 'sleeping' ? (s.value === null ? 'asleep' : `${fmtTemp(s.value)} (*)`) : fmtTemp(s.value);
       return `<tr class="${bad ? 'bad' : ''}" title="${esc(s.message || s.label || '')}"><td class="mono small">${esc(s.id)}</td><td class="muted">${esc(s.source)}</td>
         <td class="num"><b>${esc(val)}</b></td><td class="num age muted">${bad ? esc(s.status) : esc(fmtAge(s.age))}</td></tr>`;
-    }).join('')}</tbody></table>` : '<div class="card-body muted">No sensors yet. <a href="#/sensors">Add a sensor source</a>.</div>';
+    }).join('')}</tbody></table>` : `<div class="card-body muted">${nIgnored ? 'All sensors are ignored.' : 'No sensors yet.'} <a href="#/sensors">Sensors page</a>.</div>`;
 
   root.querySelector('#d-events').innerHTML = st.events.length ? st.events.slice(0, 15).map((ev) =>
     `<li class="${esc(ev.kind)} ${esc(ev.level)}"><time class="mono">${esc(fmtTime(ev.ts))}</time><span>${ev.level === 'error' ? '<b>●</b> ' : ''}${esc(ev.message)}</span></li>`).join('')

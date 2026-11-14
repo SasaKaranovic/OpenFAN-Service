@@ -244,8 +244,9 @@ def _source_from(request: Request, body: dict[str, Any], source_id: str, old: di
         cls.resolve_options(options)
     except ValueError as exc:
         raise ApiError(str(exc)) from exc
+    ignored = body.get("ignored", (old or {}).get("ignored", []))
     return {
-        "id": source_id, "type": type_name,
+        "id": source_id, "type": type_name, "ignored": [str(x) for x in ignored or []],
         "name": str(body.get("name") or cls.title or type_name)[:60],
         "enabled": bool(body.get("enabled", True)),
         "poll_interval": float(body.get("poll_interval") or cls.default_poll_interval),
@@ -285,6 +286,27 @@ async def delete_source(request: Request) -> Response:
         data["sources"] = [c for c in data["sources"] if c["id"] != sid]
         if len(data["sources"]) == before:
             raise ApiError("sensor source not found", 404)
+    save(request, fn)
+    return ok()
+
+
+async def ignore_sensor(request: Request) -> Response:
+    """Ignore or restore one sensor: {"ref": "unraid:parity2", "ignored": true}."""
+    body = await body_json(request)
+    ref = str(body.get("ref") or "")
+    source_id, _, sensor_id = ref.partition(":")
+    if not source_id or not sensor_id:
+        raise ApiError("ref must look like 'source:sensor'")
+    want = bool(body.get("ignored", True))
+
+    def fn(data):
+        src = next((x for x in data["sources"] if x["id"] == source_id), None)
+        if src is None:
+            raise ApiError(f"sensor source '{source_id}' not found", 404)
+        lst = [x for x in src.get("ignored", []) if x != sensor_id]
+        if want:
+            lst.append(sensor_id)
+        src["ignored"] = sorted(lst)
     save(request, fn)
     return ok()
 
@@ -638,6 +660,7 @@ ROUTES = [
     Route("/api/fans/{controller}/{index:int}", update_fan, methods=["PUT"]),
     Route("/api/sources", create_source, methods=["POST"]),
     Route("/api/sources/test", test_source, methods=["POST"]),
+    Route("/api/sensors/ignore", ignore_sensor, methods=["POST"]),
     Route("/api/sources/{source_id}", update_source, methods=["PUT"]),
     Route("/api/sources/{source_id}", delete_source, methods=["DELETE"]),
     Route("/api/push/{source_id}", push, methods=["POST"]),

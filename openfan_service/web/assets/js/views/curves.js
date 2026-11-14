@@ -85,12 +85,17 @@ function sensorInfo(ref) {
 function currentInput() {
   const vals = [];
   let problem = null;
+  let ignored = 0;
+  let asleep = 0;
   for (const ref of draft.sensors) {
     const s = sensorInfo(ref);
+    if (s && s.status === 'ignored') { ignored += 1; continue; }
     if (!s || ['stale', 'error', 'missing'].includes(s.status)) { problem = ref; continue; }
     if (s.value !== null && s.value !== undefined) vals.push([s.value, ref]);
+    else asleep += 1;
   }
   if (problem) return { problem };
+  if (!vals.length && ignored && !asleep) return { allIgnored: true };
   if (!vals.length) return { temp: null };
   const nums = vals.map((v) => v[0]);
   const temp = draft.combine === 'min' ? Math.min(...nums) : draft.combine === 'avg' ? nums.reduce((a, b) => a + b, 0) / nums.length : Math.max(...nums);
@@ -266,12 +271,13 @@ function paintSensors() {
   el.querySelector('#c-sensors').innerHTML = draft.sensors.map((ref) => {
     const s = sensorInfo(ref);
     const bad = !s || ['stale', 'error', 'missing'].includes(s.status);
-    const val = !s ? 'not found' : bad ? s.status : (s.value === null ? 'asleep' : fmtTemp(s.value));
-    return `<span class="schip ${bad ? 'bad' : ''} ${cur.top === ref ? 'top' : ''}" title="${esc(s?.label || s?.message || '')}">
+    const ign = s && s.status === 'ignored';
+    const val = !s ? 'not found' : ign ? 'ignored (left out)' : bad ? s.status : (s.value === null ? 'asleep' : fmtTemp(s.value));
+    return `<span class="schip ${bad ? 'bad' : ''} ${ign ? 'ignored' : ''} ${cur.top === ref ? 'top' : ''}" title="${esc(ign ? 'Ignored on the Sensors page, so this curve does not use it' : (s?.label || s?.message || ''))}">
       <span class="mono">${esc(ref)}</span><span class="muted">${esc(val)}</span>
       <button type="button" data-rm="${esc(ref)}" aria-label="Remove ${esc(ref)}">×</button></span>`;
   }).join('') || '<span class="muted small">No sensors yet. A curve without sensors runs its fans in fail-safe.</span>';
-  const options = (store.state?.sensors || []).filter((s) => !draft.sensors.includes(s.ref));
+  const options = (store.state?.sensors || []).filter((s) => !draft.sensors.includes(s.ref) && !s.ignored);
   el.querySelector('#c-addsensor').innerHTML = `<option value="">+ Add sensor…</option>` + options.map((s) =>
     `<option value="${esc(s.ref)}">${esc(s.ref)}${s.label ? ` – ${esc(s.label)}` : ''} · ${esc(s.value === null ? s.status : fmtTemp(s.value))}</option>`).join('');
 }
@@ -314,7 +320,10 @@ export function onState(st) {
   if (!ctx || !draft || !ctx.el.isConnected || !ctx.el.querySelector('#c-now')) return;
   const cur = currentInput();
   const now = ctx.el.querySelector('#c-now');
-  if (cur.problem) {
+  if (cur.allIgnored) {
+    now.innerHTML = '<span style="color:var(--danger)">All sensors of this curve are ignored → fans would run in <b>fail-safe</b>.</span>';
+    graph.update({ current: null });
+  } else if (cur.problem) {
     now.innerHTML = `<span style="color:var(--danger)">Sensor <b>${esc(cur.problem)}</b> has a problem → fans would run in <b>fail-safe</b>.</span>`;
     graph.update({ current: null });
   } else if (cur.temp === null) {

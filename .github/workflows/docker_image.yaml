@@ -1,11 +1,12 @@
 name: Docker image
 
-# Builds a multi-arch image (amd64 + arm64) and pushes it to GitHub Container Registry
-# on pushes to the `release` branch (or when started by hand). Each build is a new version:
-#   ghcr.io/<owner>/openfan-service:<yyyy-mm-dd>, :<yyyy-mm-dd>-<git hash> and :latest (release branch).
+# Builds one multi-arch image (linux/amd64 + linux/arm64) and pushes it to GitHub Container
+# Registry on every push to master (or release), or when started by hand. Each build is a new version:
+#   ghcr.io/<owner>/openfan-service:latest, :<yyyy-mm-dd> and :<yyyy-mm-dd>-<git hash>
+# "docker pull ...:latest" automatically picks the amd64 or arm64 variant for the machine.
 on:
   push:
-    branches: ["release"]
+    branches: ["master", "release"]
   workflow_dispatch:
 
 env:
@@ -44,7 +45,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/release' }}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/release' }}
             type=raw,value=${{ steps.version.outputs.date }}
             type=raw,value=${{ steps.version.outputs.date }}-${{ steps.version.outputs.sha }}
       - uses: docker/build-push-action@v6
