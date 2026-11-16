@@ -2,6 +2,7 @@ name: Tests
 
 on:
   push:
+    paths: ['docker/**', 'openfan_service/**', 'tests/**', 'Dockerfile']
   pull_request:
 
 jobs:
