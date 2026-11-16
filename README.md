@@ -1,5 +1,10 @@
 # OpenFAN Service
 
+![OpenFAN Service Dashboard](assets/screenshot-dashboard.png)
+
+![OpenFAN Service Fan Curves](assets/screenshot-fan-curves.png)
+
+
 Automatic, temperature-driven fan control for the [OpenFAN Controller](https://github.com/SasaKaranovic/OpenFanController), with a web UI.
 
 * Draw **fan curves** in the browser and assign them to one or more fans.
@@ -261,7 +266,9 @@ openfan_service/
 
 #### Sasa Karanovic
 
-<a href="https://sasakaranovic.com/" target="_blank">Home Page</a> ·
-<a href="https://youtube.com/c/sasakaranovic" target="_blank">YouTube</a> ·
-<a href="https://github.com/sasakaranovic" target="_blank">GitHub</a> ·
-<a href="https://github.com/sponsors/SasaKaranovic" target="_blank">Sponsor on GitHub</a>
+<a href="https://sasakaranovic.com/" target="_blank" title="Sasa Karanovic Home Page"><img src="https://raw.githubusercontent.com/SasaKaranovic/common/master/assets/img_home.png" width="16"> Home Page</a> &nbsp;&middot;&nbsp;
+<a href="https://youtube.com/c/sasakaranovic" target="_blank" title="Sasa Karanovic on YouTube"><img src="https://raw.githubusercontent.com/SasaKaranovic/common/master/assets/img_youtube.png" width="16"> YouTube</a> &nbsp;&middot;&nbsp;
+<a href="https://github.com/sasakaranovic" target="_blank" title="Sasa Karanovic on GitHub"><img src="https://raw.githubusercontent.com/SasaKaranovic/common/master/assets/img_github.png" width="16"> GitHub</a> &nbsp;&middot;&nbsp;
+<a href="https://twitter.com/_sasakaranovic_" target="_blank" title="Sasa Karanovic on Twitter"><img src="https://raw.githubusercontent.com/SasaKaranovic/common/master/assets/img_twitter.png" width="16"> Twitter</a> &nbsp;&middot;&nbsp;
+<a href="https://instagram.com/_sasakaranovic_" target="_blank" title="Sasa Karanovic on Instagram"><img src="https://raw.githubusercontent.com/SasaKaranovic/common/master/assets/img_instagram.png" width="16"> Instagram</a> &nbsp;&middot;&nbsp;
+<a href="https://github.com/sponsors/SasaKaranovic" target="_blank" title="Sponsor on GitHub"><img src="https://raw.githubusercontent.com/SasaKaranovic/common/master/assets/img_github.png" width="16"> Sponsor on GitHub</a>
